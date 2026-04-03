@@ -7,15 +7,32 @@ const {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 	TextDisplayBuilder,
+	FileUploadBuilder,
+	CheckboxBuilder,
+	CheckboxGroupBuilder,
+	CheckboxGroupOptionBuilder,
+	RadioGroupBuilder,
+	RadioGroupOptionBuilder,
 } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('new_modal')
-		.setDescription('新しいモーダルを試しましょう！'),
+		.setDescription('新しいモーダルを試しましょう！')
+		.addIntegerOption((option) =>
+			option
+				.setName('number')
+				.setDescription(
+					'２ページに分かれているので、1か2を選択して入力してください',
+				)
+				.setRequired(true)
+				.setChoices({ name: '1', value: 1 }, { name: '2', value: 2 }),
+		),
 
 	run: async (client, interaction) => {
 		try {
+			const number = interaction.options.getInteger('number');
+
 			const modal = new ModalBuilder()
 				.setCustomId('newModal')
 				.setTitle('新しいモーダル');
@@ -75,16 +92,88 @@ module.exports = {
 						),
 				);
 
+			const fileUploadInput = new LabelBuilder()
+				.setLabel('ファイルアップロード')
+				.setDescription(
+					'ここにファイルアップロードコンポーネントを追加してください',
+				)
+				.setFileUploadComponent(
+					new FileUploadBuilder()
+						.setCustomId('fileUploadInput')
+						.setRequired(false)
+						.setMaxValues(3),
+				);
+
+			const RadioButtonInput = new LabelBuilder()
+				.setLabel('ラジオボタン')
+				.setDescription('ここにラジオボタンを追加してください')
+				.setRadioGroupComponent(
+					new RadioGroupBuilder()
+						.setCustomId('radioButtonInput')
+						.addOptions(
+							new RadioGroupOptionBuilder()
+								.setLabel('ラジオオプション 1')
+								.setValue('radioOption1')
+								.setDescription('これはラジオオプション 1 です')
+								.setDefault(true),
+							new RadioGroupOptionBuilder()
+								.setLabel('ラジオオプション 2')
+								.setValue('radioOption2')
+								.setDescription('これはラジオオプション 2 です'),
+						),
+				);
+
+			const multiCheckboxInput = new LabelBuilder()
+				.setLabel('複数チェックボックス')
+				.setDescription(
+					'何かを選んで欲しい時とか、選択肢が複数必要なチェックボックスを追加できます',
+				)
+				.setCheckboxGroupComponent(
+					new CheckboxGroupBuilder()
+						.setCustomId('multiCheckboxInput')
+						.setMaxValues(2)
+						.setRequired(true)
+						.setOptions(
+							new CheckboxGroupOptionBuilder()
+								.setLabel('option1')
+								.setValue('op1')
+								.setDescription('これはオプション 1 です')
+								.setDefault(true),
+							new CheckboxGroupOptionBuilder()
+								.setLabel('option2')
+								.setValue('op2')
+								.setDescription('これはオプション 2 です'),
+							new CheckboxGroupOptionBuilder()
+								.setLabel('option3')
+								.setValue('op3')
+								.setDescription('これはオプション 3 です'),
+						),
+				);
+
+			const singleCheckboxInput = new LabelBuilder()
+				.setLabel('単体チェックボックス')
+				.setDescription(
+					'選択肢が複数要らないチェックボックスを追加できます。なお、単一項目を必須化する場合は、単体チェックボックスは必須に出来ないため、groupでオプションを1つだけにする事で実装してください',
+				)
+				.setCheckboxComponent(
+					new CheckboxBuilder().setCustomId('singleCheckboxInput'),
+				);
+
 			const textDisplay = new TextDisplayBuilder().setContent(
 				'# ※これはテスト用モーダル表示コマンドであり、実行しても何も起こりません。',
 			);
 
+			const labelComponents =
+				number === 1
+					? [
+							shortTextInput,
+							paragraphTextInput,
+							stringSelectMenu,
+							fileUploadInput,
+						]
+					: [RadioButtonInput, multiCheckboxInput, singleCheckboxInput];
 			modal
-				.addLabelComponents(
-					shortTextInput,
-					paragraphTextInput,
-					stringSelectMenu,
-				)
+				.addLabelComponents(labelComponents)
 				.addTextDisplayComponents(textDisplay);
 
 			await interaction.showModal(modal);
