@@ -15,8 +15,8 @@
 	"dependencies": {
 		"@distube/youtube": "^1.0.4",
 		"discord-html-transcripts": "^3.3.0-next-5eed3d",
-		"discord.js": "^14.25.1",
-		"dotenv": "^17.3.1",
+		"discord.js": "^14.26.0",
+		"dotenv": "^17.4.0",
 		"express": "^5.2.1",
 		"mathjax": "^4.1.1",
 		"node-cron": "^4.2.1",
