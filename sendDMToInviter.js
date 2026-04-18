@@ -71,7 +71,7 @@ client.on('messageCreate', (message) => {
 		message.channel.send({
 			embeds: [
 				{
-					title: 'Planet bot β (JS)について',
+					title: 'HoshimiTech Betaについて',
 					description: 'node.jsで作成された、BOT開発テスト用のbotです。',
 					color: 3823616,
 					timestamp: new Date(),
