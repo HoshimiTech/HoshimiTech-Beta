@@ -7,8 +7,11 @@ http
 	.listen(8080);
 
 // Discord bot implements
-const { YouTubePlugin } = require('@distube/youtube');
-const youTubePlugin = new YouTubePlugin();
+const { Ytdl } = require('@distube/ytdl-core');
+const yt = new Ytdl({
+	lang: 'ja',
+	country: 'JP',
+});
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
 	intents: [
@@ -46,53 +49,63 @@ client.on('messageCreate', async (message) => {
 	const command = args.shift().toLowerCase();
 
 	if (command === 'help') {
-		message.channel.send({
-			embeds: [
-				{
-					title: 'HELP',
-					description: 'ないよう',
-					color: 0x227fff,
-					timestamp: new Date(),
-					thumbnail: {
-						url: 'attachment://logo.png',
+		try {
+			await message.channel.send({
+				embeds: [
+					{
+						title: 'HELP',
+						description: 'ないよう',
+						color: 0x227fff,
+						timestamp: new Date(),
+						thumbnail: {
+							url: 'attachment://logo.png',
+						},
+						footer: {
+							text: 'This bot is made by Hoshimikan6490',
+							icon_url: 'attachment://me.png',
+						},
 					},
-					footer: {
-						text: 'This bot is made by Hoshimikan6490',
-						icon_url: 'attachment://me.png',
+				],
+				files: [
+					{
+						attachment: 'images/logo.png',
+						name: 'logo.png',
 					},
-				},
-			],
-			files: [
-				{
-					attachment: 'images/logo.png',
-					name: 'logo.png',
-				},
-				{
-					attachment: 'images/me.png',
-					name: 'me.png',
-				},
-			],
-		});
+					{
+						attachment: 'images/me.png',
+						name: 'me.png',
+					},
+				],
+			});
+		} catch (error) {
+			console.error('Error sending help message:', error);
+		}
 	} else if (command === 'yt_search') {
-		const AKB = message.content.split(' ').slice(1).join(' ');
-		if (!AKB)
+		if (!args.length)
 			return message.channel.send(
 				'エラー:空白がないまたは検索内容を書いていません',
 			);
-		const results = await youTubePlugin.search(AKB, {
+		const results = await yt.search(args.join(' '), {
 			type: 'video',
 			limit: 5,
 		});
-		const maxTracks = results.slice(0, 10);
 
 		message.channel.send(
-			`${maxTracks
-				.map(
-					(song, i) =>
-						`**${i + 1}**. [${song.name}](${song.url}) | \`${
-							song.uploader.name
-						}\``,
-				)
+			`${results
+				.map((song, i) => {
+					const totalTime = [
+						...(song.lengthSeconds >= 3600
+							? [String(Math.floor(song.lengthSeconds / 3600)).padStart(2, '0')]
+							: []),
+						String(Math.floor((song.lengthSeconds % 3600) / 60)).padStart(
+							2,
+							'0',
+						),
+						String(Math.floor(song.lengthSeconds % 60)).padStart(2, '0'),
+					].join(':');
+
+					return `**${i + 1}**. [${song.title}](${song.url}) | by [${song.author.name}](${song.author.url}) | \`${totalTime}\` | ${song.viewCount > 10000 ? `${(song.viewCount / 10000).toFixed(1)}万` : `${song.viewCount}`}回再生`;
+				})
 				.join('\n')}`,
 		);
 	}
